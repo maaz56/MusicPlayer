@@ -9,8 +9,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,17 +26,33 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayerService mPlayer;
     boolean mServiceBound = false;
 
+    RecyclerView recyclerView;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+
         loadAudio();
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        AudioAdapter adapter = new AudioAdapter(MainActivity.this, audioList);
+        recyclerView.setAdapter(adapter);
+
+
+
+
 
         playAudio("https://upload.wikimedia.org/wikipedia/commons/6/6c/Grieg_Lyric_Pieces_Kobold.ogg");
 
 
     }
+
 
     private void loadAudio() {
         ContentResolver contentResolver = getContentResolver();
@@ -54,12 +73,12 @@ public class MainActivity extends AppCompatActivity {
 
                 audioList.add(new Audio(data, title, album, artist, duration));
 
-                Log.d(TAG, "loadAudio: " + "Data: " + data +
+               /* Log.d(TAG, "loadAudio: " + "Data: " + data +
                         "*Title: " + title +
                         "*album: " + album +
                         "*artist: " + artist +
                         "*Duration: " + duration);
-
+*/
             }
         }
 
@@ -99,4 +118,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean("ServiceState", mServiceBound);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        mServiceBound = savedInstanceState.getBoolean("ServiceState");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
 }
